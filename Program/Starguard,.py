@@ -7,6 +7,9 @@ try:
 	from skimage.io import imread
 	from skimage import data, exposure
 	from astropy.io import fits
+	from sklearn.neighbors import KNeighborsClassifier
+	from sklearn.model_selection import train_test_split
+	from sklearn import metrics
 	
 except Exception as error:
 	print("Library import error: " + str(error))
@@ -15,10 +18,11 @@ except Exception as error:
 
 
 class starguard():
-	def __init__(self, dataset, image_size = 200):
-		self.dataset = dataset
+	def __init__(self, dataset, image_size = 200, K = 3):
+		self.dataset = pd.read_csv(dataset)
 		self.image_size = image_size
 		self.data_loop_count = 20
+		self.neighbors = K
 
 
 
@@ -178,12 +182,26 @@ class starguard():
 
 
 	def showDataset(self):
-		dataset = pd.read_csv(self.dataset)
-		print(dataset)
+		#loaded_dataset = pd.read_csv(uinp_dataset)
+		print(self.dataset)
 
 
-	def anomalyDetectByFits(self):
-		pass
+	def testDatasetAccurracy(self):
+		X = self.dataset.iloc[:, :-2].values
+		y = self.dataset["name"]
+
+		X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3)
+
+		knn = KNeighborsClassifier(n_neighbors = self.neighbors)
+		knn.fit(X_train, y_train)
+
+		y_pred = knn.predict(X_test)
+
+		print(y_pred)
+		print("Accuracy:",metrics.accuracy_score(y_test, y_pred))
+
+
+
 
 
 
@@ -209,6 +227,6 @@ class starguard():
 Alice = starguard("fitsdataset.csv")
 #Alice.createImageDataset("sampleset.csv", "sample.jpg")
 #Alice.createDatasetFromFits("fitsdataset.csv", "sampfits.fits")
-
-Alice.addDataToFitsDataSet("fitsdataset.csv", ["sampfits.fits"] ,True)
-Alice.showDataset()
+#Alice.addDataToFitsDataSet("fitsdataset.csv", ["sampfits.fits"], True)
+#Alice.showDataset()
+Alice.testDatasetAccurracy()
