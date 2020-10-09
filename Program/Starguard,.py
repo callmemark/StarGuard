@@ -10,6 +10,8 @@ try:
 	from sklearn.neighbors import KNeighborsClassifier
 	from sklearn.model_selection import train_test_split
 	from sklearn import metrics
+	import cv2 as cv
+	import matplotlib.pyplot as plt
 	
 except Exception as error:
 	print("Library import error: " + str(error))
@@ -18,8 +20,8 @@ except Exception as error:
 
 
 class starguard():
-	def __init__(self, dataset, image_size = 200, K = 3):
-		self.dataset = pd.read_csv(dataset)
+	def __init__(self, dataset = None, image_size = 200, K = 3):
+		self.dataset = dataset
 		self.image_size = image_size
 		self.data_loop_count = 20
 		self.neighbors = K
@@ -42,7 +44,7 @@ class starguard():
 
 
 
-	def createImageDataset(self, dataset_name, image):
+	def createImageHogDataset(self, dataset_name, image):
 		try:
 			resized_image = Image.open(image)
 			resized_image = resized_image.resize((self.image_size,self.image_size),Image.ANTIALIAS)
@@ -79,6 +81,51 @@ class starguard():
 			
 		except Exception as error:
 			print("Error:" +  str(error))
+
+
+
+	def addDataToImageHogDataset(self, dataset_name, image, normal):
+		try:
+			resized_image = Image.open(image)
+			resized_image = resized_image.resize((self.image_size,self.image_size),Image.ANTIALIAS)
+			resized_image.save("deleteThisAfterDatasetIsCreated.jpg",optimize=True,quality=100)
+			image = "deleteThisAfterDatasetIsCreated.jpg"
+			hog_encoded_image = self.encodeHog(image)
+
+			image_hog_data = np.array(hog_encoded_image).reshape(1, self.image_size * self.image_size)
+
+			dataset_array = np.array([])
+
+
+			loop_count = self.data_loop_count
+
+			while loop_count > 0:
+				dataset_array = np.append(dataset_array, image_hog_data)
+				loop_count -= 1
+				print("looped" + str(loop_count))
+
+				if loop_count == 0:
+					break
+
+			print(dataset_array.shape)
+
+			dataset_array = dataset_array.reshape(self.data_loop_count, self.image_size * self.image_size)
+
+			print("shape" + str(dataset_array.shape))
+			dataset = pd.DataFrame(dataset_array, columns = map(str, range(self.image_size * self.image_size))) 
+			
+			if normal == True:
+				dataset["name"] = "normal"
+			elif normal == False:
+				dataset["name"] = "anomaly"
+			else:
+				print("runtime error")
+
+			dataset.to_csv(dataset_name, index = False, header=None, mode='a')
+			print("newdataset added")
+
+		except Exception as error:
+			print(str(error))
 
 
 
@@ -177,17 +224,59 @@ class starguard():
 		
 
 
-	def createColorBaseDatsaset(self):
-		pass
+	def createImageDatsaset(self, dataset_name, colored_image):
+		if True:
+			resized_image = Image.open(colored_image)
+			resized_image = resized_image.resize((self.image_size,self.image_size),Image.ANTIALIAS)
+			resized_image.save("coloredImageResized.jpg",optimize=True,quality=100)
+
+			
+
+			img = Image.open("coloredImageResized.jpg").convert('LA')
+			img.save('greyscale_encoded.png')
+
+			image = imread("greyscale_encoded.png")
+
+			print(image.ndim)
+
+			flattent_image_array = self.toOneDimArray(image)
+
+			array_value_count = flattent_image_array.shape[0]
+			dataset_array = np.array([])
+			loop_count = self.data_loop_count
+
+			while loop_count > 0:
+				dataset_array = np.append(dataset_array, flattent_image_array)
+				loop_count -= 1
+				print("looped" + str(loop_count))
+
+				if loop_count == 0:
+					break
+
+			print(dataset_array.shape)
+
+			dataset_array = dataset_array.reshape(self.data_loop_count, int(array_value_count / 2) * 2)
+
+			print("shape" + str(dataset_array.shape))
+			dataset = pd.DataFrame(dataset_array, columns = map(str, range(int(array_value_count / 2) * 2))) 
+			dataset["name"] = "normal"
+
+			dataset.to_csv(dataset_name, index = False)
+			print("newdataset added")
+
+		else:
+			print("good")
 
 
 	def showDataset(self):
-		#loaded_dataset = pd.read_csv(uinp_dataset)
-		print(self.dataset)
+		print("loading dataset")
+		loaded_dataset = pd.read_csv(self.dataset)
+		print(loaded_dataset)
+
 
 
 	def testDatasetAccurracy(self):
-		X = self.dataset.iloc[:, :-2].values
+		X = self.dataset.iloc[:, :-1].values
 		y = self.dataset["name"]
 
 		X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3)
@@ -202,31 +291,69 @@ class starguard():
 
 
 
+	def AnomalyDetectByHogImage(self, image):
+		try:
+			resized_image = Image.open(image)
+			resized_image = resized_image.resize((self.image_size,self.image_size),Image.ANTIALIAS)
+			resized_image.save("deleteThisAfterDatasetIsCreated.jpg",optimize=True,quality=100)
+			image = "deleteThisAfterDatasetIsCreated.jpg"
+
+			hog_encoded_image = self.encodeHog(image)
+
+			image_hog_data = np.array(hog_encoded_image).reshape(1, self.image_size * self.image_size)
+
+			X = self.dataset.iloc[:, :-1].values
+			y = self.dataset["name"]
 
 
 
-	def AnomalyDetectByBWImage(self):
+			knn = KNeighborsClassifier(n_neighbors = self.neighbors)
+			knn.fit(X, y)
+
+			prediction = knn.predict(image_hog_data)
+
+			print(prediction)
+
+		except Exception as error:
+			print(str(error))
+
+
+
+	def anomalyDetectByCV(self):
+		cap = cv.VideoCapture(0)
+
+		if not cap.isOpened():
+		    print("Cannot open camera")
+		    exit()
+
+		while True:
+		    ret, frame = cap.read()
+		  
+		    if not ret:
+		        print("Can't receive frame (stream end?). Exiting ...")
+		        break
+		  
+		    gray = cv.cvtColor(frame, cv.COLOR_BGR2GRAY)
+		    cv.imshow('frame', gray)
+
+		    if cv.waitKey(1) == ord('q'):
+		        break
+		    elif cv.waitKey(1) == ord("s"):
+		    	print("saved")
+		    	cv.imwrite("firstshot.png", gray)
+		
+		cap.release()
+		cv.destroyAllWindows()
+
+
+
+	def anomalyDetectByVideo(self):
 		pass
-
-
-
-	def AnomalyDetectByCV(self):
-		pass
-
-
-
-	def AnomalyDetectByVideo(self):
-		pass
-
 
 
 	def PerfomanceEval(self):
 		pass
 
 
-Alice = starguard("fitsdataset.csv")
-#Alice.createImageDataset("sampleset.csv", "sample.jpg")
-#Alice.createDatasetFromFits("fitsdataset.csv", "sampfits.fits")
-#Alice.addDataToFitsDataSet("fitsdataset.csv", ["sampfits.fits"], True)
-#Alice.showDataset()
-Alice.testDatasetAccurracy()
+Alice = starguard("hogdataset.csv")
+Alice.createImageDatsaset("thisisimages.csv", "firstshot.png")
