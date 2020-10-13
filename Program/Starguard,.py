@@ -12,6 +12,7 @@ try:
 	from sklearn import metrics
 	import cv2 as cv
 	import matplotlib.pyplot as plt
+	from time import sleep
 	
 except Exception as error:
 	print("Library import error: " + str(error))
@@ -224,6 +225,7 @@ class starguard():
 		
 
 
+
 	def createImageDatsaset(self, dataset_name, colored_image):
 		if True:
 			resized_image = Image.open(colored_image)
@@ -266,6 +268,40 @@ class starguard():
 
 		else:
 			print("good")
+
+
+	def createDatasetByCV(self, dataset_name):
+		cap = cv.VideoCapture(0)
+
+		if not cap.isOpened():
+		    print("Cannot open camera")
+		    exit()
+
+		while True:
+		    ret, frame = cap.read()
+		  	
+
+		    if not ret:
+		        print("Can't receive frame (stream end?). Exiting ...")
+		        break
+
+		    rescaled_frame = cv.resize(frame, (self.image_size, self.image_size))
+		    normal_frame = cv.cvtColor(frame, cv.COLOR_BGR2GRAY)
+		    detector_frame = cv.cvtColor(rescaled_frame, cv.COLOR_BGR2GRAY)
+
+		    cv.imshow('Detector Frame', detector_frame)
+		    cv.imshow('normal viewport', normal_frame)
+
+		    if cv.waitKey(1) == ord('q'):
+		        break
+		    elif cv.waitKey(1) == ord('s'):
+		    	print("please wait")
+		    	sleep(1)
+		    	cv.imwrite("cvcaptureddata.png", detector_frame)
+		    	dataset_name = dataset_name
+		    	image = "cvcaptureddata.png"
+		    	self.createImageDatsaset(dataset_name, image)
+		    	break
 
 
 	def showDataset(self):
@@ -319,7 +355,15 @@ class starguard():
 
 
 
-	def anomalyDetectByCV(self):
+	def anomalyDetectByCV(self,dataset):
+		try:
+			print("loading dataset")
+			dataset = pd.read_csv(dataset)
+			print("dataset loaded complete")
+		except Exception as error:
+			print("something wrong occured while reading dataset" + str(error))
+
+
 		cap = cv.VideoCapture(0)
 
 		if not cap.isOpened():
@@ -328,32 +372,43 @@ class starguard():
 
 		while True:
 		    ret, frame = cap.read()
-		  
+		  	
+
 		    if not ret:
 		        print("Can't receive frame (stream end?). Exiting ...")
 		        break
-		  
-		    gray = cv.cvtColor(frame, cv.COLOR_BGR2GRAY)
-		    cv.imshow('frame', gray)
+
+		    rescaled_frame = cv.resize(frame, (self.image_size, self.image_size))
+		    normal_frame = cv.cvtColor(frame, cv.COLOR_BGR2GRAY)
+		    detector_frame = cv.cvtColor(rescaled_frame, cv.COLOR_BGR2GRAY)
+
+		    #####
+
+		    # Functionality here
+
+		    #####
+
+		    cv.imshow('Detector Frame', detector_frame)
+		    cv.imshow('normal viewport', normal_frame)
 
 		    if cv.waitKey(1) == ord('q'):
 		        break
 		    elif cv.waitKey(1) == ord("s"):
 		    	print("saved")
-		    	cv.imwrite("firstshot.png", gray)
+		    	cv.imwrite("anomaly.png", detector_frame)
 		
 		cap.release()
 		cv.destroyAllWindows()
-
 
 
 	def anomalyDetectByVideo(self):
 		pass
 
 
+
 	def PerfomanceEval(self):
 		pass
 
 
-Alice = starguard("hogdataset.csv")
-Alice.createImageDatsaset("thisisimages.csv", "firstshot.png")
+Alice = starguard("sample.csv")
+Alice.createDatasetByCV("cvdataset.csv")
