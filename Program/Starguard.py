@@ -21,11 +21,45 @@ except Exception as error:
 
 
 class starguard():
-	def __init__(self, dataset = None, image_size = 200, K = 3):
-		self.dataset = dataset
+	def __init__(self, image_size = 200, K = 3):
 		self.image_size = image_size
 		self.data_loop_count = 20
 		self.neighbors = K
+
+
+
+	def knnAlgorithmDetector(self, dataset, frame):
+		X = dataset.iloc[:, :-1].values
+		y = dataset["name"]
+
+		knn = KNeighborsClassifier(n_neighbors = self.neighbors)
+		knn.fit(X, y)
+		prediction = knn.predict(frame)
+		return prediction
+
+
+
+	def testDatasetAccurracy(self):
+		X = self.dataset.iloc[:, :-1].values
+		y = self.dataset["name"]
+
+		X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3)
+
+		knn = KNeighborsClassifier(n_neighbors = self.neighbors)
+		knn.fit(X_train, y_train)
+
+		y_pred = knn.predict(X_test)
+
+		print(y_pred)
+		print("Accuracy:",metrics.accuracy_score(y_test, y_pred))
+
+
+
+	def showDataset(self, dataset):
+		print("loading dataset")
+
+		loaded_dataset = pd.read_csv(dataset)
+		print(loaded_dataset)
 
 
 
@@ -54,10 +88,7 @@ class starguard():
 			hog_encoded_image = self.encodeHog(image)
 
 			image_hog_data = np.array(hog_encoded_image).reshape(1, self.image_size * self.image_size)
-
 			dataset_array = np.array([])
-
-
 			loop_count = self.data_loop_count
 
 			while loop_count > 0:
@@ -71,14 +102,12 @@ class starguard():
 			print(dataset_array.shape)
 
 			dataset_array = dataset_array.reshape(self.data_loop_count, self.image_size * self.image_size)
-
 			print("shape" + str(dataset_array.shape))
 			dataset = pd.DataFrame(dataset_array, columns = map(str, range(self.image_size * self.image_size))) 
 			dataset["name"] = "normal"
 
 			dataset.to_csv(dataset_name, index = False)
 			print("newdataset added")
-
 			
 		except Exception as error:
 			print("Error:" +  str(error))
@@ -94,10 +123,7 @@ class starguard():
 			hog_encoded_image = self.encodeHog(image)
 
 			image_hog_data = np.array(hog_encoded_image).reshape(1, self.image_size * self.image_size)
-
 			dataset_array = np.array([])
-
-
 			loop_count = self.data_loop_count
 
 			while loop_count > 0:
@@ -213,9 +239,7 @@ class starguard():
 
 					dataset.to_csv(target_dataset, index = False, header=None, mode='a')
 					print("newdataset added")
-
 				print("all data saved")
-					
 
 			except Exception as error:
 				print(str(error))
@@ -270,7 +294,8 @@ class starguard():
 			print("good")
 
 
-	def createDatasetByCV(self, dataset_name):
+
+	def createDatasetByCV(self, dataset_name, add_data = False, classification = "normal"):
 		cap = cv.VideoCapture(0)
 
 		if not cap.isOpened():
@@ -294,37 +319,43 @@ class starguard():
 
 		    if cv.waitKey(1) == ord('q'):
 		        break
-		    elif cv.waitKey(1) == ord('s'):
+
+		    elif cv.waitKey(1) == ord('c'):
 		    	print("please wait")
 		    	sleep(1)
 		    	cv.imwrite("cvcaptureddata.png", detector_frame)
-		    	dataset_name = dataset_name
-		    	image = "cvcaptureddata.png"
-		    	self.createImageDatsaset(dataset_name, image)
+
+		    	print("---" * 20)
+
+
+		    	flattent_image_array = self.toOneDimArray(detector_frame)
+		    	array_value_count = flattent_image_array.shape[0]
+		    	dataset_array = np.array([])
+		    	loop_count = self.data_loop_count
+
+		    	while loop_count > 0:
+		    		dataset_array = np.append(dataset_array, flattent_image_array)
+		    		loop_count -= 1
+		    		print("looped" + str(loop_count))
+
+		    		if loop_count == 0:
+		    			break
+
+		    	print(dataset_array.shape)
+		    	dataset_array = dataset_array.reshape(self.data_loop_count, int(array_value_count / 2) * 2)
+		    	print("shape" + str(dataset_array.shape))
+		    	dataset = pd.DataFrame(dataset_array, columns = map(str, range(int(array_value_count / 2) * 2))) 
+		    	if add_data == True:
+			    	dataset["name"] = classification
+			    	dataset.to_csv(dataset_name, index = False, header=None, mode='a')
+			    	print("newdata added to dataset")
+
+		    	elif add_data == False:
+			    	dataset["name"] = "normal"
+			    	dataset.to_csv(dataset_name, index = False)
+			    	print("newdataset added")
+
 		    	break
-
-
-	def showDataset(self):
-		print("loading dataset")
-		loaded_dataset = pd.read_csv(self.dataset)
-		print(loaded_dataset)
-
-
-
-	def testDatasetAccurracy(self):
-		X = self.dataset.iloc[:, :-1].values
-		y = self.dataset["name"]
-
-		X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3)
-
-		knn = KNeighborsClassifier(n_neighbors = self.neighbors)
-		knn.fit(X_train, y_train)
-
-		y_pred = knn.predict(X_test)
-
-		print(y_pred)
-		print("Accuracy:",metrics.accuracy_score(y_test, y_pred))
-
 
 
 	def AnomalyDetectByHogImage(self, image):
@@ -341,8 +372,6 @@ class starguard():
 			X = self.dataset.iloc[:, :-1].values
 			y = self.dataset["name"]
 
-
-
 			knn = KNeighborsClassifier(n_neighbors = self.neighbors)
 			knn.fit(X, y)
 
@@ -355,14 +384,13 @@ class starguard():
 
 
 
-	def anomalyDetectByCV(self,dataset):
+	def anomalyDetectByCV(self, dataset):
 		try:
 			print("loading dataset")
 			dataset = pd.read_csv(dataset)
 			print("dataset loaded complete")
 		except Exception as error:
 			print("something wrong occured while reading dataset" + str(error))
-
 
 		cap = cv.VideoCapture(0)
 
@@ -373,7 +401,6 @@ class starguard():
 		while True:
 		    ret, frame = cap.read()
 		  	
-
 		    if not ret:
 		        print("Can't receive frame (stream end?). Exiting ...")
 		        break
@@ -382,33 +409,26 @@ class starguard():
 		    normal_frame = cv.cvtColor(frame, cv.COLOR_BGR2GRAY)
 		    detector_frame = cv.cvtColor(rescaled_frame, cv.COLOR_BGR2GRAY)
 
-		    #####
+		    flattent_image_array = self.toOneDimArray(detector_frame)
 
-		    # Functionality here
+		    prediction = self.knnAlgorithmDetector(dataset, [flattent_image_array])
 
-		    #####
+		    if prediction == "anomaly":
+		    	print("anomaly")
+		    elif prediction == "normal":
+		    	print("normal")
 
 		    cv.imshow('Detector Frame', detector_frame)
 		    cv.imshow('normal viewport', normal_frame)
 
 		    if cv.waitKey(1) == ord('q'):
-		        break
+		    	flattent_image_array = self.toOneDimArray(detector_frame)
+		    	print(flattent_image_array.ndim)
+		    	print(flattent_image_array.shape)
+		    	break
 		    elif cv.waitKey(1) == ord("s"):
 		    	print("saved")
 		    	cv.imwrite("anomaly.png", detector_frame)
 		
 		cap.release()
 		cv.destroyAllWindows()
-
-
-	def anomalyDetectByVideo(self):
-		pass
-
-
-
-	def PerfomanceEval(self):
-		pass
-
-
-Alice = starguard("sample.csv")
-Alice.createDatasetByCV("cvdataset.csv")
