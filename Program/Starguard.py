@@ -12,7 +12,8 @@ try:
 	from sklearn import metrics
 	import cv2 as cv
 	import matplotlib.pyplot as plt
-	from time import sleep
+	import time
+	import os
 	
 except Exception as error:
 	print("Library import error: " + str(error))
@@ -322,7 +323,6 @@ class starguard():
 
 		    elif cv.waitKey(1) == ord('c'):
 		    	print("please wait")
-		    	sleep(1)
 		    	cv.imwrite("cvcaptureddata.png", detector_frame)
 
 		    	print("---" * 20)
@@ -398,9 +398,11 @@ class starguard():
 		    print("Cannot open camera")
 		    exit()
 
+		count = 0
 		while True:
 		    ret, frame = cap.read()
-		  	
+		   
+
 		    if not ret:
 		        print("Can't receive frame (stream end?). Exiting ...")
 		        break
@@ -414,7 +416,15 @@ class starguard():
 		    prediction = self.knnAlgorithmDetector(dataset, [flattent_image_array])
 
 		    if prediction == "anomaly":
-		    	print("anomaly")
+		    	print("captured anomaly")
+
+		    	if not os.path.exists("anomalyImages"):
+		    		os.mkdir("anomalyImages")
+		    		print("folder created")
+
+		    	count += 1
+		    	cv.imwrite("anomalyImages/" + str(time.time()) + ".png" , detector_frame)
+
 		    elif prediction == "normal":
 		    	print("normal")
 
@@ -426,9 +436,6 @@ class starguard():
 		    	print(flattent_image_array.ndim)
 		    	print(flattent_image_array.shape)
 		    	break
-		    elif cv.waitKey(1) == ord("s"):
-		    	print("saved")
-		    	cv.imwrite("anomaly.png", detector_frame)
 		
 		cap.release()
 		cv.destroyAllWindows()
