@@ -21,7 +21,7 @@ except Exception as error:
 
 
 
-class starguard():
+class StarGuard():
 	def __init__(self, image_size = 200, K = 3):
 		self.image_size = image_size
 		self.data_loop_count = 20
@@ -32,7 +32,7 @@ class starguard():
 	def knnAlgorithmDetector(self, dataset, frame):
 		X = dataset.iloc[:, :-1].values
 		y = dataset["name"]
-
+		
 		knn = KNeighborsClassifier(n_neighbors = self.neighbors)
 		knn.fit(X, y)
 		prediction = knn.predict(frame)
@@ -45,10 +45,8 @@ class starguard():
 		y = self.dataset["name"]
 
 		X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3)
-
 		knn = KNeighborsClassifier(n_neighbors = self.neighbors)
 		knn.fit(X_train, y_train)
-
 		y_pred = knn.predict(X_test)
 
 		print(y_pred)
@@ -58,7 +56,6 @@ class starguard():
 
 	def showDataset(self, dataset):
 		print("loading dataset")
-
 		loaded_dataset = pd.read_csv(dataset)
 		print(loaded_dataset)
 
@@ -225,7 +222,6 @@ class starguard():
 							break
 
 					print(fits_dataset.shape)
-
 					fits_dataset = fits_dataset.reshape(self.data_loop_count, int(array_value_count / 2) * 2)
 
 					print("shape" + str(fits_dataset.shape))
@@ -244,7 +240,6 @@ class starguard():
 
 			except Exception as error:
 				print(str(error))
-
 		else:
 			print("error check parameter")	
 		
@@ -257,11 +252,8 @@ class starguard():
 			resized_image = resized_image.resize((self.image_size,self.image_size),Image.ANTIALIAS)
 			resized_image.save("coloredImageResized.jpg",optimize=True,quality=100)
 
-			
-
 			img = Image.open("coloredImageResized.jpg").convert('LA')
 			img.save('greyscale_encoded.png')
-
 			image = imread("greyscale_encoded.png")
 
 			print(image.ndim)
@@ -281,7 +273,6 @@ class starguard():
 					break
 
 			print(dataset_array.shape)
-
 			dataset_array = dataset_array.reshape(self.data_loop_count, int(array_value_count / 2) * 2)
 
 			print("shape" + str(dataset_array.shape))
@@ -305,8 +296,6 @@ class starguard():
 
 		while True:
 		    ret, frame = cap.read()
-		  	
-
 		    if not ret:
 		        print("Can't receive frame (stream end?). Exiting ...")
 		        break
@@ -327,7 +316,6 @@ class starguard():
 
 		    	print("---" * 20)
 
-
 		    	flattent_image_array = self.toOneDimArray(detector_frame)
 		    	array_value_count = flattent_image_array.shape[0]
 		    	dataset_array = np.array([])
@@ -346,15 +334,14 @@ class starguard():
 		    	print("shape" + str(dataset_array.shape))
 		    	dataset = pd.DataFrame(dataset_array, columns = map(str, range(int(array_value_count / 2) * 2))) 
 		    	if add_data == True:
-			    	dataset["name"] = classification
+			    	dataset["classiffication"] = classification
 			    	dataset.to_csv(dataset_name, index = False, header=None, mode='a')
 			    	print("newdata added to dataset")
 
 		    	elif add_data == False:
-			    	dataset["name"] = "normal"
+			    	dataset["classiffication"] = "normal"
 			    	dataset.to_csv(dataset_name, index = False)
 			    	print("newdataset added")
-
 		    	break
 
 
@@ -366,7 +353,6 @@ class starguard():
 			image = "deleteThisAfterDatasetIsCreated.jpg"
 
 			hog_encoded_image = self.encodeHog(image)
-
 			image_hog_data = np.array(hog_encoded_image).reshape(1, self.image_size * self.image_size)
 
 			X = self.dataset.iloc[:, :-1].values
@@ -374,9 +360,7 @@ class starguard():
 
 			knn = KNeighborsClassifier(n_neighbors = self.neighbors)
 			knn.fit(X, y)
-
 			prediction = knn.predict(image_hog_data)
-
 			print(prediction)
 
 		except Exception as error:
@@ -384,11 +368,13 @@ class starguard():
 
 
 
-	def anomalyDetectByCV(self, dataset):
+	def anomalyDetectByCV(self, dataset, cap_anomaly = True, absolute_changes_detection = False):
 		try:
 			print("loading dataset")
+			print("---" * 20)
 			dataset = pd.read_csv(dataset)
 			print("dataset loaded complete")
+			print("---" * 20)
 		except Exception as error:
 			print("something wrong occured while reading dataset" + str(error))
 
@@ -401,8 +387,6 @@ class starguard():
 		count = 0
 		while True:
 		    ret, frame = cap.read()
-		   
-
 		    if not ret:
 		        print("Can't receive frame (stream end?). Exiting ...")
 		        break
@@ -412,18 +396,18 @@ class starguard():
 		    detector_frame = cv.cvtColor(rescaled_frame, cv.COLOR_BGR2GRAY)
 
 		    flattent_image_array = self.toOneDimArray(detector_frame)
-
 		    prediction = self.knnAlgorithmDetector(dataset, [flattent_image_array])
 
 		    if prediction == "anomaly":
 		    	print("captured anomaly")
 
-		    	if not os.path.exists("anomalyImages"):
-		    		os.mkdir("anomalyImages")
-		    		print("folder created")
+		    	if cap_anomaly == True:
+			    	if not os.path.exists("anomalyImages"):
+			    		os.mkdir("anomalyImages")
+			    		print("folder created")
 
-		    	count += 1
-		    	cv.imwrite("anomalyImages/" + str(time.time()) + ".png" , detector_frame)
+			    	count += 1
+			    	cv.imwrite("anomalyImages/" + str(time.time()) + ".png" , detector_frame)
 
 		    elif prediction == "normal":
 		    	print("normal")
