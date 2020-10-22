@@ -374,6 +374,8 @@ class StarGuard():
 			print("loading dataset")
 			print("---" * 20)
 			dataset = pd.read_csv(dataset)
+			output = dataset.loc[dataset['classification'] == "normal"]
+			self.normal_absolute_data = np.array(output.head(1))[0][0:-1]
 			print("dataset loaded complete")
 			print("---" * 20)
 		except Exception as error:
@@ -397,7 +399,19 @@ class StarGuard():
 		    detector_frame = cv.cvtColor(rescaled_frame, cv.COLOR_BGR2GRAY)
 
 		    flattent_image_array = self.toOneDimArray(detector_frame)
-		    prediction = self.knnAlgorithmDetector(dataset, [flattent_image_array])
+
+		    if absolute_changes_detection == False:
+		    	prediction = self.knnAlgorithmDetector(dataset, [flattent_image_array])
+		    elif absolute_changes_detection == True:
+		    	comparison = self.normal_absolute_data == flattent_image_array
+		    	if False in comparison:
+		    		prediction = "anomaly"
+		    	else:
+		    		prediction = "normal"
+
+		    else:
+		    	print("parameter error")
+		    	break
 
 		    if prediction == "anomaly":
 		    	print("captured anomaly")
@@ -416,7 +430,7 @@ class StarGuard():
 		    cv.imshow('Detector Frame', detector_frame)
 		    cv.imshow('normal viewport', normal_frame)
 
-		    if cv.waitKey(1) == ord('q'):
+		    if cv.waitKey(1) == ord('x'):
 		    	flattent_image_array = self.toOneDimArray(detector_frame)
 		    	print(flattent_image_array.ndim)
 		    	print(flattent_image_array.shape)

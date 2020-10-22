@@ -48,7 +48,7 @@ class MainApp():
 
 
 		abs_detect = StringVar(self.cv_detection_frame)
-		abs_detect.set("true")
+		abs_detect.set("false")
 		Label(self.cv_detection_frame, text = "abs detect:").place(x = "5", y = "40px")
 		abs_detect_option_menu = OptionMenu(self.cv_detection_frame, abs_detect, "false", "true")
 		abs_detect_option_menu.place(x = "90px", y = "40px")
@@ -83,7 +83,7 @@ class MainApp():
 		crete_dataset_btn.place(x = "220px", y = "100px")
 
 		def startDetection():
-			print("to close: Click the video viewport and press the letter q on your keyboard")
+			print("to close: Click the video viewport and press the letter x on your keyboard")
 			cv_input_dataset = cv_dataset.get()
 			cap_anomaly_input = cap_anomaly.get()
 			if cap_anomaly_input == "true":
