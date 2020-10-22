@@ -31,7 +31,7 @@ class StarGuard():
 
 	def knnAlgorithmDetector(self, dataset, frame):
 		X = dataset.iloc[:, :-1].values
-		y = dataset["name"]
+		y = dataset["classification"]
 		
 		knn = KNeighborsClassifier(n_neighbors = self.neighbors)
 		knn.fit(X, y)
@@ -42,7 +42,7 @@ class StarGuard():
 
 	def testDatasetAccurracy(self):
 		X = self.dataset.iloc[:, :-1].values
-		y = self.dataset["name"]
+		y = self.dataset["classification"]
 
 		X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3)
 		knn = KNeighborsClassifier(n_neighbors = self.neighbors)
@@ -102,7 +102,7 @@ class StarGuard():
 			dataset_array = dataset_array.reshape(self.data_loop_count, self.image_size * self.image_size)
 			print("shape" + str(dataset_array.shape))
 			dataset = pd.DataFrame(dataset_array, columns = map(str, range(self.image_size * self.image_size))) 
-			dataset["name"] = "normal"
+			dataset["classification"] = "normal"
 
 			dataset.to_csv(dataset_name, index = False)
 			print("newdataset added")
@@ -140,9 +140,9 @@ class StarGuard():
 			dataset = pd.DataFrame(dataset_array, columns = map(str, range(self.image_size * self.image_size))) 
 			
 			if normal == True:
-				dataset["name"] = "normal"
+				dataset["classification"] = "normal"
 			elif normal == False:
-				dataset["name"] = "anomaly"
+				dataset["classification"] = "anomaly"
 			else:
 				print("runtime error")
 
@@ -182,7 +182,7 @@ class StarGuard():
 
 			print("shape" + str(fits_dataset.shape))
 			dataset = pd.DataFrame(fits_dataset, columns = map(str, range(int(array_value_count / 2) * 2)))
-			dataset["name"] = "normal"
+			dataset["classification"] = "normal"
 
 			dataset.to_csv(dataset_name, index = False)
 			print("newdataset added")
@@ -228,9 +228,9 @@ class StarGuard():
 					dataset = pd.DataFrame(fits_dataset, columns = map(str, range(int(array_value_count / 2) * 2)))
 
 					if normal == True:
-						dataset["name"] = "normal"
+						dataset["classification"] = "normal"
 					elif normal == False:
-						dataset["name"] = "anomaly"
+						dataset["classification"] = "anomaly"
 					else:
 						print("runtime error")
 
@@ -277,7 +277,7 @@ class StarGuard():
 
 			print("shape" + str(dataset_array.shape))
 			dataset = pd.DataFrame(dataset_array, columns = map(str, range(int(array_value_count / 2) * 2))) 
-			dataset["name"] = "normal"
+			dataset["classification"] = "normal"
 
 			dataset.to_csv(dataset_name, index = False)
 			print("newdataset added")
@@ -287,7 +287,7 @@ class StarGuard():
 
 
 
-	def createDatasetByCV(self, dataset_name, add_data = False, classification = "normal"):
+	def createDatasetByCV(self, dataset_name, add_data = False, data_classification = "normal"):
 		cap = cv.VideoCapture(0)
 
 		if not cap.isOpened():
@@ -333,13 +333,14 @@ class StarGuard():
 		    	dataset_array = dataset_array.reshape(self.data_loop_count, int(array_value_count / 2) * 2)
 		    	print("shape" + str(dataset_array.shape))
 		    	dataset = pd.DataFrame(dataset_array, columns = map(str, range(int(array_value_count / 2) * 2))) 
+
 		    	if add_data == True:
-			    	dataset["classiffication"] = classification
+			    	dataset["classification"] = data_classification
 			    	dataset.to_csv(dataset_name, index = False, header=None, mode='a')
 			    	print("newdata added to dataset")
 
 		    	elif add_data == False:
-			    	dataset["classiffication"] = "normal"
+			    	dataset["classification"] = "normal"
 			    	dataset.to_csv(dataset_name, index = False)
 			    	print("newdataset added")
 		    	break
@@ -356,7 +357,7 @@ class StarGuard():
 			image_hog_data = np.array(hog_encoded_image).reshape(1, self.image_size * self.image_size)
 
 			X = self.dataset.iloc[:, :-1].values
-			y = self.dataset["name"]
+			y = self.dataset["classification"]
 
 			knn = KNeighborsClassifier(n_neighbors = self.neighbors)
 			knn.fit(X, y)
@@ -423,3 +424,4 @@ class StarGuard():
 		
 		cap.release()
 		cv.destroyAllWindows()
+
