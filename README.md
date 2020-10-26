@@ -8,3 +8,13 @@
 
 ### This is a program for my research.
 This program will be use to demonstrate supervised anomaly detection.
+
+# **Installation and setup**
+1. clone or download the the repository
+1. To get all necessary libraries download the following using pip install command.
+* pip install sklearn
+* pip install numpy
+* pip install matplotlib
+* pip install scikit-image
+* pip install opencv-python
+* pip install pandas
