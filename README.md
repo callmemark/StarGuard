@@ -1,6 +1,8 @@
 # StarGuard
  Anomaly detector in the night sky
-###### Wiki will be added soon
+ 
+ 
+###### guide here, Wiki link: https://github.com/callmemark/StarGuard/wiki
 
 
 ### This is a program for my research.
