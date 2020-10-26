@@ -352,5 +352,4 @@ class StarGuard():
 			print("Error:" + str(error))
 			self.br()
 
-if __name__ == "__main__":
-	module = StarGuard()
+module = StarGuard()
