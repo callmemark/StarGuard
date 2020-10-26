@@ -3,6 +3,7 @@
  
  
 ###### guide here, Wiki link: https://github.com/callmemark/StarGuard/wiki
+###### List of methods, https://github.com/callmemark/StarGuard/wiki/Methods
 
 
 ### This is a program for my research.
