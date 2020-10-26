@@ -21,3 +21,5 @@ https://github.com/callmemark/StarGuard/archive/main.zip
 * pip install scikit-image
 * pip install opencv-python
 * pip install pandas
+
+1. Run the program. You can use either the main module Starguard or the GUI for easier use
