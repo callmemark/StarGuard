@@ -24,5 +24,6 @@ This program will be use to demonstrate supervised anomaly detection.
 * pip install scikit-image
 * pip install opencv-python
 * pip install pandas
+* pip install Pillow
 
 1. Run the program. You can use either the main module Starguard or the GUI for easier use
