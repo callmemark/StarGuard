@@ -20,10 +20,11 @@ except Exception as error:
 
 
 class StarGuard():
-	def __init__(self, image_size = 200, K = 3):
+	def __init__(self, image_size = 200, K = 3, camera_index_def = 0):
 		self.image_size = image_size
 		self.data_loop_count = 20
 		self.neighbors = K
+		self.camera_index = camera_index_def
 
 
 
@@ -189,7 +190,7 @@ class StarGuard():
 
 
 	def createDatasetByCV(self, dataset_name, add_data = False, data_classification = "normal"):
-		cap = cv.VideoCapture(0)
+		cap = cv.VideoCapture(self.camera_index)
 
 		if not cap.isOpened():
 		    print("Cannot open camera")
@@ -288,7 +289,7 @@ class StarGuard():
 			print("dataset loaded complete")
 			print("---" * 20)
 
-			cap = cv.VideoCapture(0)
+			cap = cv.VideoCapture(self.camera_index)
 
 			if not cap.isOpened():
 			    print("Cannot open camera")
