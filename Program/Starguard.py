@@ -56,7 +56,7 @@ class StarGuard():
 			toOneDimArray(multidimensional numpy array) >>> return a flattened version of array
 			createImageHogDataset(dataset name (.csv), image dir) >>> create a dataset file
 			addDataToImageHogDataset(dataset name (.csv), image dir, bool) >>> add data to the existing dataset
-			createDatasetByCV(dataset name (.csv), add_data = bool, data_classification = "normal" or "anomaly str) >>> create or add new data to a dataset
+			createDatasetByCV(dataset name (.csv), add_data = bool, normal = bool) >>> create or add new data to a dataset
 			anomalyDetectByHogImage(image dir, dataset name (.csv)) >>> print a prediction. to exit this method just click the camera viewport and click the x button on keyboard
 			anomalyDetectByCV(dataset name (.csv), cap_anomaly = bool, print_frame_class = bool, absolute_changes_detection = bool) >>> print a prediction. this method will open the cameraand will capture the image if parameter is true. to exit this method just click the camera viewport and click the x button on keyboard
 			""")
@@ -189,7 +189,13 @@ class StarGuard():
 	
 
 
-	def createDatasetByCV(self, dataset_name, add_data = False, data_classification = "normal"):
+	def createDatasetByCV(self, dataset_name, add_data = False, normal = True):
+
+		if normal == True:
+			data_classification = "normal"
+		elif normal == False:
+			data_classification = "anomaly"
+
 		cap = cv.VideoCapture(self.camera_index)
 
 		if not cap.isOpened():
