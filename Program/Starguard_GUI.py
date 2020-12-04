@@ -200,7 +200,7 @@ For documentation please proceed to the project repository"""
 			test_image_input = test_image.get()
 			dataset_input = dataset.get()
 
-			self.stg.AnomalyDetectByHogImage(test_image_input, dataset_input)
+			self.stg.anomalyDetectByHogImage(test_image_input, dataset_input)
 
 
 
