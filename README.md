@@ -13,7 +13,10 @@ https://github.com/callmemark/StarGuard/wiki
 ### This is a program for my research.
 This program will be use to demonstrate supervised anomaly detection.
 
-
+# for auto installtion of dependencies use the installer file
+command:
+in terminal 0r in cmd navigate the installer file and run the code <br/>
+##### python installer.py
 
 # **Installation and setup**
 1. clone or download the the repository
